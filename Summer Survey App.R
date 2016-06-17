@@ -20,6 +20,7 @@ survey$gender <- as.factor(survey$gender_male_t1 + 2*survey$gender_female_t1 + 3
                            + 4*survey$gender_prfr_not_answr_t1)
 survey$gender <- mapvalues(survey$gender, from = c("1", "2","3","4"), to = c("Male","Female","Other",
                                                                              "Preferred not to answer"))
+survey$demog_age_t1 <- as.factor(survey$demog_age_t1)
 
 
 ui <- fluidPage(
@@ -32,8 +33,8 @@ ui <- fluidPage(
           sidebarMenu(
             menuItem("Basic Demographics", tabName = "basic", icon = icon("th")),
             
-            selectInput("funding","Funding Source", choices = c("All",levels(survey$fund_source))),
-            selectInput("gender", "Gender", choices= c("All",levels(survey$gender)))
+            selectInput(inputId="funding",label="Funding Source", choices = c("All",levels(survey$fund_source))),
+            selectInput(inputId="gender",label="Gender", choices= c("All",levels(survey$gender)))
       
           )
         ),
@@ -48,7 +49,7 @@ ui <- fluidPage(
                       tabPanel("Age", plotOutput('age')),
                       tabPanel("Gender", plotOutput('gender')),
                       tabPanel("Parents' Education", plotOutput('education')),
-                      tabPanel("Parents' Income", plotOutput('education')),
+                      tabPanel("Parents' Income", plotOutput('income')),
                       tabPanel("Ethnicity", plotOutput('ethnicity')),
                       width = 11
                     )
@@ -62,10 +63,13 @@ ui <- fluidPage(
 
 
 server <- function(input,output,session)  { 
-  
-  observe({
+
+###Establishes file() as the reactive subset of survey desired
+ ##This definitely could be cleaner...
+
+    observe({
     updateSelectInput(session, inputId = "funding", 
-                      label = "Funding Source", choices = c("All",unique(survey$fund_source )),
+                      label = "Funding Source", choices = c("All",levels(survey$fund_source )),
                       selected=c("All"))
   })
   
@@ -79,7 +83,8 @@ server <- function(input,output,session)  {
   
   observe({
     updateSelectInput(session, inputId = "gender", 
-                      label = "Gender", choices = c("All",unique(file0()$gender)),selected=c("All"))
+                      label = "Gender", choices = c("All",levels(file0()$gender)),
+                      selected=c("All"))
   })
   
   file = reactive({
@@ -89,6 +94,18 @@ server <- function(input,output,session)  {
       file0()
     } 
   })
+  
+###Age Plot 
+  output$age <- renderPlot({
+    numeric.age <- as.numeric(file()$demog_age_t1)
+    numeric.age <- mapvalues(numeric.age, from = c("1", "2","3","4","5"), to = c(18,19,20,21,22))
+    mean_age <- round( mean(numeric.age,na.rm=TRUE), 2)
+    plot(file()$demog_age_t1,main="Distribution of Age",xlab="Age of Participants",
+         ylab="Frequency")
+    text(1.5,25,paste("Mean Age is", mean_age))
+
+  })
+  
   
   }
 
