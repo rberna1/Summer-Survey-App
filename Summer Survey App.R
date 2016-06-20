@@ -1,5 +1,5 @@
 rm(list=ls())
-setwd("A:/Summer Survey Data")
+setwd("A:/Summer Survey App/")
 survey <- read.csv("2016-06-14_CPIC_JOINED_DeID_for_REU.csv")
 
 #Establish Libraries
@@ -32,6 +32,7 @@ ui <- fluidPage(
     dashboardSidebar(
       sidebarMenu(
         menuItem("Basic Demographics", tabName = "basic", icon = icon("th")),
+        menuItem("Future Plans", tabName = "future", icon = icon("th")),
         
         selectInput(inputId="funding",label="Funding Source", choices = c("All",levels(survey$fund_source))),
         selectInput(inputId="gender",label="Gender", choices= c("All",levels(survey$gender)))
@@ -53,13 +54,25 @@ ui <- fluidPage(
                   tabPanel("Ethnicity", plotOutput('ethnicity')),
                   width = 11
                 )
-        )
+        ),
         
+        tabItem(tabName = "future",              
+                tabBox(
+                  title = "Future Plans",
+                  id = "tabset2",
+                  tabPanel("Interests Correlation", plotOutput('int_corr')),
+                  tabPanel("Same Sector", plotOutput('gender')),
+                  tabPanel("Different Sector", plotOutput('education')),
+                  width = 11
+                )
+        )
       )
-      
     )
   )
 )
+
+
+
 
 
 server <- function(input,output,session)  { 
@@ -103,6 +116,36 @@ server <- function(input,output,session)  {
     plot(file()$demog_age_t1,main="Distribution of Age",xlab="Age of Participants",
          ylab="Frequency")
     text(1.5,25,paste("Mean Age is", mean_age))
+    
+  })
+  
+  ##Interests Correlation
+  output$int_corr <- renderPlot({
+    file<-file()
+    print(class(file))
+    
+    ### labels for question about interest questions (Question 11)
+    interest.labels = c("CourseIssues","CourseCommunity","CoursePublicService",
+                        "UndergradIssues", "SeniorThesis","GradDegreeIssues",
+                        "GradDegreecommunity")
+    
+    # keep<-c("acad_fut_courses_issues_org_t1", "acad_fut_courses_community_org_t1",
+    #          "acad_fut_courses_eng_sch_t1", "acad_fut_conc_issues_org_t1",
+    #          "acad_fut_sen_thesis_issues_org_t1", "acad_fut_grad_deg_issues_org_t1",
+    #          "acad_fut_grad_deg_community_org_t1")
+
+    validate(
+       need(nrow(na.omit(file[33:39])) != 0, "No data available for this course")
+    )
+    #corrplot(cor(file[,motiv.name],use="complete.obs"))
+    
+    #plotting on survey works outside of ui
+    #corrplot(cor(survey[33:39],use="complete.obs"),method = "square")
+    #colnames(survey)[33:39] = interest.labels
+    
+    #plotting on file does not work within ui
+    corrplot(cor(file[33:39],use="complete.obs"),method = "square")
+    
     
   })
   
