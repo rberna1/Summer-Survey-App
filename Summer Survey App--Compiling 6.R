@@ -5,7 +5,7 @@ rm(list=ls())
 ##Dustin
 #setwd("C:/Users/dtingley/Dropbox")
 ##Irving
-setwd("A:/Summer Survey Data")
+setwd("A:/Summer Survey App/")
 survey <- read.csv("2016-06-14_CPIC_JOINED_DeID_for_REU.csv")
 #Everyone put their local path here. Don't delete anyone elses
 #setwd("TRICAM2016/publicservice")
@@ -382,15 +382,14 @@ server <- function(input,output,session)  {
     var = c("career_int_same_sector_vol_t1", "career_int_same_sector_pt_coll_t1",
             "career_int_same_sector_pt_post_t1", "career_int_same_sector_ft_post_t1")
     
+    #cols 40:43
     
     #for %, divide first arg by /sum(table(file[,var[i]])
     for (i in 1:4){
-      fine <- mapvalues(file[,var[i]],from=c(1,2,3,4,5),
-                        to=c("No", "Possibly", "Maybe", "Probably", "Definitely"))
-      barplot(table(fine),las=1,
-              main = paste(graphs[i]),cex.names=1.15,xlab="Response",font.lab=2,
-              ylab = "# of Responses"
-      )
+      fine <- mapvalues(file[,var[i]],from=c(1,2,3,4,5),to=xlabels, warn_missing = FALSE)
+    
+      barplot(table(factor(fine, levels = xlabels)),las=1, main = paste(graphs[i]),
+                    cex.names=1.15, xlab="Response", font.lab=2, ylab = "# of Responses")
     }
     
   })
@@ -415,7 +414,7 @@ server <- function(input,output,session)  {
     )
     
     question = "Do you think you will engage in public service in a different sector as your fellowship?"
-    xlabels = c("No", "Possibly", "Maybe", "Probably", "Definitely")
+    xlabels = c("1:No", "2:Possibly", "3:Maybe", "4:Probably", "5:Definitely")
     graphs = c("Volunteer", "Intern/PT (during college)", "Intern/PT (after college)", "FT After College", "Definitely")
     var = names(file[44:47])
     
@@ -425,12 +424,8 @@ server <- function(input,output,session)  {
     
     #for %, divide first arg by /sum(table(file[,var[i]])
     for (i in 1:4){
-      finer <- mapvalues(file[,var[i]],from=c(1,2,3,4,5),
-                        to=c("No", "Possibly", "Maybe", "Probably", "Definitely"))
-      barplot(table(finer),las=1,
-              main = paste(graphs[i]),cex.names=1.15,xlab="Response",font.lab=2, ylab = "# of Responses"
-              
-      )
+      finer <- mapvalues(file[,var[i]], from=c(1,2,3,4,5), to=xlabels)
+      barplot(table(finer), las=1, main=paste(graphs[i]), cex.names=1.15, xlab="Response", font.lab=2, ylab = "# of Responses")
     }
     
   })
